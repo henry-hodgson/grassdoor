@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Leave a Review | London 5-a-Side Pitch Reviews</title>
+  <meta name="description" content="Submit a review for a 5-a-side football pitch in London." />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container nav">
+      <a href="index.html" class="logo">Pitch Review London</a>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="pitches.html">Pitches</a></li>
+          <li><a href="review.html" class="active">Leave a Review</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container section">
+    <div class="section-heading">
+      <h1>Leave a review</h1>
+      <p>Use this form to collect feedback from players. For now it shows a success message in the browser.</p>
+    </div>
+
+    <form id="reviewForm" class="review-form card">
+      <label for="pitch-name">Pitch name</label>
+      <input type="text" id="pitch-name" name="pitch-name" placeholder="e.g. Westway Sports Centre" required />
+
+      <label for="location">Area of London</label>
+      <select id="location" name="location" required>
+        <option value="">Select an area</option>
+        <option>North London</option>
+        <option>South London</option>
+        <option>East London</option>
+        <option>West London</option>
+        <option>Central London</option>
+      </select>
+
+      <label for="rating">Overall rating</label>
+      <select id="rating" name="rating" required>
+        <option value="">Select a rating</option>
+        <option>5 - Excellent</option>
+        <option>4 - Very good</option>
+        <option>3 - Good</option>
+        <option>2 - Poor</option>
+        <option>1 - Very poor</option>
+      </select>
+
+      <label for="surface">Surface quality</label>
+      <select id="surface" name="surface">
+        <option value="">Select surface quality</option>
+        <option>Excellent</option>
+        <option>Good</option>
+        <option>Average</option>
+        <option>Poor</option>
+      </select>
+
+      <label for="facilities">Facilities rating</label>
+      <select id="facilities" name="facilities">
+        <option value="">Select facilities rating</option>
+        <option>Excellent</option>
+        <option>Good</option>
+        <option>Average</option>
+        <option>Poor</option>
+      </select>
+
+      <label for="review-text">Your review</label>
+      <textarea id="review-text" name="review-text" rows="6" placeholder="What was good? What could be better?" required></textarea>
+
+      <label for="reviewer-name">Your name</label>
+      <input type="text" id="reviewer-name" name="reviewer-name" placeholder="Optional" />
+
+      <button type="submit" class="button">Submit review</button>
+
+      <p id="formMessage" class="form-message"></p>
+    </form>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>© 2026 Pitch Review London</p>
+      <p>Built for 5-a-side players in London.</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
