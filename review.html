@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Leave a Review | London 5-a-Side Pitch Reviews</title>
+  <title>Leave a Review | Pitch Review London</title>
   <meta name="description" content="Submit a review for a 5-a-side football pitch in London." />
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -24,56 +24,66 @@
   <main class="container section">
     <div class="section-heading">
       <h1>Leave a review</h1>
-      <p>Use this form to collect feedback from players. For now it shows a success message in the browser.</p>
+      <p>Submit your experience for a London 5-a-side pitch.</p>
     </div>
 
     <form id="reviewForm" class="review-form card">
-      <label for="pitch-name">Pitch name</label>
-      <input type="text" id="pitch-name" name="pitch-name" placeholder="e.g. Westway Sports Centre" required />
+      <label for="reviewer_name">Your name</label>
+      <input
+        type="text"
+        id="reviewer_name"
+        name="reviewer_name"
+        placeholder="Optional"
+      />
 
-      <label for="location">Area of London</label>
-      <select id="location" name="location" required>
-        <option value="">Select an area</option>
-        <option>North London</option>
-        <option>South London</option>
-        <option>East London</option>
-        <option>West London</option>
-        <option>Central London</option>
+      <label for="pitch_id">Pitch ID</label>
+      <input
+        type="number"
+        id="pitch_id"
+        name="pitch_id"
+        placeholder="e.g. 1"
+        required
+      />
+
+      <label for="quality_of_opposition">Quality of opposition (1-5)</label>
+      <select id="quality_of_opposition" name="quality_of_opposition" required>
+        <option value="">Select a score</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
       </select>
 
-      <label for="rating">Overall rating</label>
-      <select id="rating" name="rating" required>
-        <option value="">Select a rating</option>
-        <option>5 - Excellent</option>
-        <option>4 - Very good</option>
-        <option>3 - Good</option>
-        <option>2 - Poor</option>
-        <option>1 - Very poor</option>
+      <label for="quality_of_pitch">Quality of pitch (1-5)</label>
+      <select id="quality_of_pitch" name="quality_of_pitch" required>
+        <option value="">Select a score</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
       </select>
 
-      <label for="surface">Surface quality</label>
-      <select id="surface" name="surface">
-        <option value="">Select surface quality</option>
-        <option>Excellent</option>
-        <option>Good</option>
-        <option>Average</option>
-        <option>Poor</option>
+      <label for="price_per_team_per_game">Price per team per game (£)</label>
+      <input
+        type="number"
+        step="0.01"
+        id="price_per_team_per_game"
+        name="price_per_team_per_game"
+        placeholder="e.g. 35.00"
+        required
+      />
+
+      <label for="overall_experience">Overall experience (1-5)</label>
+      <select id="overall_experience" name="overall_experience" required>
+        <option value="">Select a score</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
       </select>
-
-      <label for="facilities">Facilities rating</label>
-      <select id="facilities" name="facilities">
-        <option value="">Select facilities rating</option>
-        <option>Excellent</option>
-        <option>Good</option>
-        <option>Average</option>
-        <option>Poor</option>
-      </select>
-
-      <label for="review-text">Your review</label>
-      <textarea id="review-text" name="review-text" rows="6" placeholder="What was good? What could be better?" required></textarea>
-
-      <label for="reviewer-name">Your name</label>
-      <input type="text" id="reviewer-name" name="reviewer-name" placeholder="Optional" />
 
       <button type="submit" class="button">Submit review</button>
 
@@ -88,6 +98,7 @@
     </div>
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="script.js"></script>
 </body>
 </html>
