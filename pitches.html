@@ -3,98 +3,93 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pitches | London 5-a-Side Pitch Reviews</title>
-  <meta name="description" content="Browse 5-a-side football pitches in London." />
+  <title>Find football pitches in London | Grassdoor</title>
+  <meta name="description" content="Search and compare London football pitches by area, surface, format, price and player rating." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body>
+<body data-page="pitches">
   <header class="site-header">
     <div class="container nav">
-      <a href="index.html" class="logo">Pitch Review London</a>
-      <nav>
+      <a href="index.html" class="logo" aria-label="Grassdoor home"><span class="logo-mark">G</span><span>Grassdoor</span></a>
+      <nav aria-label="Primary navigation">
         <ul class="nav-links">
           <li><a href="index.html">Home</a></li>
-          <li><a href="pitches.html" class="active">Pitches</a></li>
-          <li><a href="review.html">Leave a Review</a></li>
+          <li><a href="pitches.html" class="active">Find pitches</a></li>
+          <li><a href="review.html">Write a review</a></li>
         </ul>
       </nav>
     </div>
   </header>
 
-  <main class="container section">
-    <div class="section-heading">
-      <h1>Pitch directory</h1>
-      <p>Example pitch listings for your site. Replace these with real venues whenever you like.</p>
+  <main class="container section directory-section">
+    <div class="section-heading directory-heading">
+      <p class="eyebrow">Pitch directory</p>
+      <h1>Find your next game.</h1>
+      <p>Search London pitches and compare what players actually care about.</p>
     </div>
 
-    <div class="pitch-grid">
-      <article class="pitch-card">
-        <div class="pitch-card-top">
-          <span class="tag">North London</span>
-          <span class="rating">⭐ 4.5</span>
-        </div>
-        <h2>Powerleague Shoreditch</h2>
-        <p><strong>Nearest station:</strong> Old Street</p>
-        <p><strong>Surface:</strong> 3G artificial turf</p>
-        <p><strong>Facilities:</strong> Changing rooms, floodlights, café</p>
-        <p><strong>Price guide:</strong> £££</p>
-        <p class="muted">
-          Popular for after-work games. Good quality surface and strong lighting, but can be busy.
-        </p>
-      </article>
+    <section class="filter-panel" aria-label="Pitch filters">
+      <div class="filter-search">
+        <label for="searchInput">Search</label>
+        <input id="searchInput" type="search" placeholder="Pitch, area or station" autocomplete="off" />
+      </div>
+      <div>
+        <label for="areaFilter">Area</label>
+        <select id="areaFilter"><option value="">All areas</option></select>
+      </div>
+      <div>
+        <label for="sizeFilter">Format</label>
+        <select id="sizeFilter"><option value="">All formats</option></select>
+      </div>
+      <div>
+        <label for="surfaceFilter">Surface</label>
+        <select id="surfaceFilter"><option value="">All surfaces</option></select>
+      </div>
+      <div>
+        <label for="priceFilter">Price</label>
+        <select id="priceFilter">
+          <option value="">Any price</option>
+          <option value="£">£</option>
+          <option value="££">££</option>
+          <option value="£££">£££</option>
+        </select>
+      </div>
+      <button id="clearFilters" class="button button-secondary filter-clear" type="button">Clear</button>
+    </section>
 
-      <article class="pitch-card">
-        <div class="pitch-card-top">
-          <span class="tag">South London</span>
-          <span class="rating">⭐ 4.2</span>
-        </div>
-        <h2>Goals Eltham</h2>
-        <p><strong>Nearest station:</strong> Mottingham</p>
-        <p><strong>Surface:</strong> Astroturf</p>
-        <p><strong>Facilities:</strong> Parking, changing rooms, floodlights</p>
-        <p><strong>Price guide:</strong> ££</p>
-        <p class="muted">
-          Reliable option with decent facilities and good value for regular weekly bookings.
-        </p>
-      </article>
+    <div class="directory-toolbar">
+      <p id="resultCount" class="muted">Loading pitches…</p>
+      <p id="dataSourceNote" class="data-note"></p>
+    </div>
 
-      <article class="pitch-card">
-        <div class="pitch-card-top">
-          <span class="tag">West London</span>
-          <span class="rating">⭐ 4.7</span>
+    <div class="directory-layout">
+      <section>
+        <div id="pitchGrid" class="pitch-grid directory-grid" aria-live="polite"></div>
+        <div id="emptyState" class="empty-state hidden">
+          <h2>No pitches match those filters.</h2>
+          <p>Try clearing one or two filters.</p>
         </div>
-        <h2>Westway Sports Centre</h2>
-        <p><strong>Nearest station:</strong> Latimer Road</p>
-        <p><strong>Surface:</strong> 3G artificial turf</p>
-        <p><strong>Facilities:</strong> Showers, café, equipment hire</p>
-        <p><strong>Price guide:</strong> £££</p>
-        <p class="muted">
-          Strong all-round venue with quality pitches and good transport links for central and west London players.
-        </p>
-      </article>
-
-      <article class="pitch-card">
-        <div class="pitch-card-top">
-          <span class="tag">East London</span>
-          <span class="rating">⭐ 4.0</span>
-        </div>
-        <h2>Goals Beckton</h2>
-        <p><strong>Nearest station:</strong> Gallions Reach</p>
-        <p><strong>Surface:</strong> Astroturf</p>
-        <p><strong>Facilities:</strong> Parking, floodlights, social area</p>
-        <p><strong>Price guide:</strong> ££</p>
-        <p class="muted">
-          Spacious venue and easy for drivers, though some players find the surface a bit more worn.
-        </p>
-      </article>
+      </section>
+      <aside class="map-panel">
+        <div id="pitchMap" aria-label="Map of London football pitches"></div>
+      </aside>
     </div>
   </main>
 
   <footer class="site-footer">
     <div class="container footer-inner">
-      <p>© 2026 Pitch Review London</p>
-      <p>Built for 5-a-side players in London.</p>
+      <a href="index.html" class="logo"><span class="logo-mark">G</span><span>Grassdoor</span></a>
+      <p>Independent football pitch reviews for London.</p>
+      <p>© 2026 Grassdoor</p>
     </div>
   </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="script.js"></script>
 </body>
 </html>
