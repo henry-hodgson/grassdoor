@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pitch details | Grassdoor</title>
+  <meta name="description" content="Football pitch details and player reviews on Grassdoor." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body data-page="pitch-detail">
+  <header class="site-header">
+    <div class="container nav">
+      <a href="index.html" class="logo" aria-label="Grassdoor home"><span class="logo-mark">G</span><span>Grassdoor</span></a>
+      <nav aria-label="Primary navigation">
+        <ul class="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="pitches.html" class="active">Find pitches</a></li>
+          <li><a href="review.html">Write a review</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="pitchDetail" class="container section" aria-live="polite">
+    <div class="loading-card">Loading pitch…</div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <a href="index.html" class="logo"><span class="logo-mark">G</span><span>Grassdoor</span></a>
+      <p>Independent football pitch reviews for London.</p>
+      <p>© 2026 Grassdoor</p>
+    </div>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="script.js"></script>
+</body>
+</html>
