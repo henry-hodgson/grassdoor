@@ -4,16 +4,17 @@ const supabaseClient = window.supabase
   ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
   : null;
 
-// Mirrors the exact public.dim_pitches schema. Used only if Supabase cannot be read.
+// Mirrors public.dim_pitches, including optional latitude/longitude.
+// Used only if Supabase cannot be read.
 const FALLBACK_PITCHES = [
-  { id: 1, name: "Powerleague Shoreditch", area: "East London", nearest_station: "Old Street", game_format: "5-a-side", length: 40, width: 30, walls: true, overhead_net: true, men: true, women: true, under_18: true, showers: true },
-  { id: 2, name: "Goals Eltham", area: "South London", nearest_station: "Mottingham", game_format: "5-a-side", length: 40, width: 30, walls: true, overhead_net: true, men: true, women: true, under_18: true, showers: true },
-  { id: 3, name: "Westway Sports Centre", area: "West London", nearest_station: "Latimer Road", game_format: "5-a-side", length: 40, width: 30, walls: true, overhead_net: false, men: true, women: true, under_18: true, showers: true },
-  { id: 4, name: "Goals Beckton", area: "East London", nearest_station: "Gallions Reach", game_format: "5-a-side", length: 40, width: 30, walls: true, overhead_net: true, men: true, women: true, under_18: true, showers: true },
-  { id: 5, name: "Market Road Football Pitches", area: "North London", nearest_station: "Caledonian Road", game_format: "7-a-side", length: 60, width: 40, walls: false, overhead_net: false, men: true, women: true, under_18: true, showers: true },
-  { id: 6, name: "Mile End Park Leisure Centre", area: "East London", nearest_station: "Mile End", game_format: "7-a-side", length: 60, width: 40, walls: false, overhead_net: false, men: true, women: true, under_18: true, showers: true },
-  { id: 7, name: "Ferndale Community Sports Centre", area: "South London", nearest_station: "Brixton", game_format: "5-a-side", length: 40, width: 30, walls: false, overhead_net: false, men: true, women: true, under_18: true, showers: true },
-  { id: 8, name: "Paddington Recreation Ground", area: "West London", nearest_station: "Maida Vale", game_format: "11-a-side", length: 100, width: 64, walls: false, overhead_net: false, men: true, women: true, under_18: true, showers: true }
+  { id: 1, name: "Powerleague Shoreditch", area: "East London", nearest_station: "Old Street", game_format: "5-a-side", length: 40, width: 30, walls: true, overhead_net: true, men: true, women: true, under_18: true, showers: true, latitude: 51.5283, longitude: -0.0862 },
+  { id: 2, name: "Goals Eltham", area: "South London", nearest_station: "Mottingham", game_format: "5-a-side", length: 40, width: 30, walls: true, overhead_net: true, men: true, women: true, under_18: true, showers: true, latitude: 51.4325, longitude: 0.0494 },
+  { id: 3, name: "Westway Sports Centre", area: "West London", nearest_station: "Latimer Road", game_format: "5-a-side", length: 40, width: 30, walls: true, overhead_net: false, men: true, women: true, under_18: true, showers: true, latitude: 51.5169, longitude: -0.2186 },
+  { id: 4, name: "Goals Beckton", area: "East London", nearest_station: "Gallions Reach", game_format: "5-a-side", length: 40, width: 30, walls: true, overhead_net: true, men: true, women: true, under_18: true, showers: true, latitude: 51.5147, longitude: 0.0612 },
+  { id: 5, name: "Market Road Football Pitches", area: "North London", nearest_station: "Caledonian Road", game_format: "7-a-side", length: 60, width: 40, walls: false, overhead_net: false, men: true, women: true, under_18: true, showers: true, latitude: 51.5468, longitude: -0.1232 },
+  { id: 6, name: "Mile End Park Leisure Centre", area: "East London", nearest_station: "Mile End", game_format: "7-a-side", length: 60, width: 40, walls: false, overhead_net: false, men: true, women: true, under_18: true, showers: true, latitude: 51.5201, longitude: -0.0343 },
+  { id: 7, name: "Ferndale Community Sports Centre", area: "South London", nearest_station: "Brixton", game_format: "5-a-side", length: 40, width: 30, walls: false, overhead_net: false, men: true, women: true, under_18: true, showers: true, latitude: 51.4598, longitude: -0.1167 },
+  { id: 8, name: "Paddington Recreation Ground", area: "West London", nearest_station: "Maida Vale", game_format: "11-a-side", length: 100, width: 64, walls: false, overhead_net: false, men: true, women: true, under_18: true, showers: true, latitude: 51.5299, longitude: -0.1913 }
 ];
 
 let cachedPitches = null;
@@ -48,8 +49,19 @@ function normalizePitch(row) {
     men: row.men === true,
     women: row.women === true,
     under_18: row.under_18 === true,
-    showers: row.showers === true
+    showers: row.showers === true,
+    latitude: numberOrNull(row.latitude),
+    longitude: numberOrNull(row.longitude)
   };
+}
+
+function hasCoordinates(pitch) {
+  return Number.isFinite(pitch.latitude)
+    && Number.isFinite(pitch.longitude)
+    && pitch.latitude >= -90
+    && pitch.latitude <= 90
+    && pitch.longitude >= -180
+    && pitch.longitude <= 180;
 }
 
 async function loadPitches() {
@@ -59,7 +71,7 @@ async function loadPitches() {
   try {
     const { data, error } = await supabaseClient
       .from("dim_pitches")
-      .select("id, created_at, name, area, nearest_station, game_format, length, width, walls, overhead_net, men, women, under_18, showers")
+      .select("id, created_at, name, area, nearest_station, game_format, length, width, walls, overhead_net, men, women, under_18, showers, latitude, longitude")
       .order("name", { ascending: true });
 
     if (error) throw error;
@@ -174,6 +186,29 @@ function populateSelect(select, values, label) {
       .join("");
 }
 
+function createBaseMap(elementId, center = [51.5074, -0.1278], zoom = 10) {
+  if (!window.L || !document.getElementById(elementId)) return null;
+  const map = L.map(elementId, { scrollWheelZoom: false }).setView(center, zoom);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "&copy; OpenStreetMap contributors",
+    maxZoom: 19
+  }).addTo(map);
+  return map;
+}
+
+function addPitchMarker(layer, pitch, stats) {
+  if (!hasCoordinates(pitch)) return null;
+  const rating = Number.isFinite(stats.overall) ? `★ ${stats.overall.toFixed(1)}` : "No ratings yet";
+  return L.marker([pitch.latitude, pitch.longitude])
+    .bindPopup(`
+      <strong>${escapeHtml(pitch.name)}</strong><br>
+      ${escapeHtml(pitch.game_format)} · ${escapeHtml(pitch.area)}<br>
+      ${escapeHtml(rating)}<br>
+      <a href="pitch.html?id=${encodeURIComponent(pitch.id)}">View pitch</a>
+    `)
+    .addTo(layer);
+}
+
 async function initPitches() {
   const grid = document.getElementById("pitchGrid");
   if (!grid) return;
@@ -187,6 +222,9 @@ async function initPitches() {
   const count = document.getElementById("resultCount");
   const empty = document.getElementById("emptyState");
   const note = document.getElementById("dataSourceNote");
+  const mapNote = document.getElementById("mapNote");
+  const map = createBaseMap("pitchMap");
+  const markerLayer = map ? L.layerGroup().addTo(map) : null;
 
   populateSelect(area, pitches.map((p) => p.area), "All areas");
   populateSelect(format, pitches.map((p) => p.game_format), "All formats");
@@ -195,6 +233,29 @@ async function initPitches() {
     note.textContent = pitchDataSource === "dim_pitches"
       ? "Live pitch data from Supabase."
       : "Showing fallback pitches because Supabase pitch data is not currently readable.";
+  }
+
+  function renderMap(filtered) {
+    if (!map || !markerLayer) return;
+    markerLayer.clearLayers();
+    const bounds = [];
+
+    filtered.forEach((pitch) => {
+      if (!hasCoordinates(pitch)) return;
+      addPitchMarker(markerLayer, pitch, getPitchStats(pitch.id, reviews));
+      bounds.push([pitch.latitude, pitch.longitude]);
+    });
+
+    if (mapNote) {
+      const missing = filtered.length - bounds.length;
+      mapNote.textContent = bounds.length
+        ? `${bounds.length} mapped pitch${bounds.length === 1 ? "" : "es"}${missing ? ` · ${missing} without coordinates` : ""}.`
+        : "No matching pitches have coordinates yet.";
+    }
+
+    if (bounds.length === 1) map.setView(bounds[0], 13);
+    else if (bounds.length > 1) map.fitBounds(bounds, { padding: [28, 28], maxZoom: 13 });
+    else map.setView([51.5074, -0.1278], 10);
   }
 
   function render() {
@@ -211,6 +272,7 @@ async function initPitches() {
     count.textContent = `${filtered.length} pitch${filtered.length === 1 ? "" : "es"}`;
     grid.innerHTML = filtered.map((p) => pitchCardHtml(p, getPitchStats(p.id, reviews))).join("");
     empty.classList.toggle("hidden", filtered.length !== 0);
+    renderMap(filtered);
   }
 
   [search, area, format, facility, access].forEach((element) => {
@@ -269,6 +331,10 @@ async function initPitchDetail() {
       </article>`).join("")
     : '<div class="empty-state compact"><h3>No reviews yet.</h3><p>Be the first player to rate this pitch.</p></div>';
 
+  const locationCard = hasCoordinates(pitch)
+    ? `<div class="map-card pitch-location-card"><div id="detailMap"></div><p class="map-note">Map location from Supabase coordinates.</p></div>`
+    : `<div class="card pitch-location-card coordinate-empty"><p class="eyebrow">Location</p><h3>Map location not added yet.</h3><p class="muted">Add latitude and longitude to this pitch in Supabase and the map will appear automatically.</p></div>`;
+
   root.innerHTML = `
     <a href="pitches.html" class="text-link back-link">← Back to pitches</a>
     <section class="pitch-detail-hero">
@@ -312,6 +378,7 @@ async function initPitchDetail() {
           ${facilities.length ? facilities.map((item) => `<span class="facility-chip">${escapeHtml(item)}</span>`).join("") : '<span class="muted">No facilities flagged in the database.</span>'}
         </div>
       </div>
+      ${locationCard}
     </section>
 
     <section class="reviews-section">
@@ -321,6 +388,16 @@ async function initPitchDetail() {
       </div>
       <div class="review-list">${reviewRows}</div>
     </section>`;
+
+  if (hasCoordinates(pitch)) {
+    const map = createBaseMap("detailMap", [pitch.latitude, pitch.longitude], 14);
+    if (map) {
+      L.marker([pitch.latitude, pitch.longitude])
+        .addTo(map)
+        .bindPopup(escapeHtml(pitch.name))
+        .openPopup();
+    }
+  }
 }
 
 async function initReviewForm() {
