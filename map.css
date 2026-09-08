@@ -1,0 +1,83 @@
+.directory-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(340px, .8fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.directory-layout > section .directory-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.map-panel,
+.map-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.map-panel {
+  position: sticky;
+  top: 86px;
+}
+
+#pitchMap {
+  width: 100%;
+  height: 620px;
+  background: var(--surface-2);
+}
+
+#detailMap {
+  width: 100%;
+  height: 390px;
+  background: var(--surface-2);
+}
+
+.map-note {
+  margin: 0;
+  padding: .75rem 1rem;
+  color: var(--muted);
+  font-size: .84rem;
+  border-top: 1px solid var(--border);
+}
+
+.pitch-location-card {
+  grid-column: 1 / -1;
+}
+
+.coordinate-empty {
+  min-height: 180px;
+}
+
+.leaflet-popup-content a {
+  color: var(--primary);
+  font-weight: 800;
+}
+
+@media (max-width: 1000px) {
+  .directory-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .map-panel {
+    position: static;
+    order: -1;
+  }
+
+  #pitchMap {
+    height: 420px;
+  }
+}
+
+@media (max-width: 760px) {
+  .directory-layout > section .directory-grid {
+    grid-template-columns: 1fr;
+  }
+
+  #pitchMap,
+  #detailMap {
+    height: 340px;
+  }
+}
