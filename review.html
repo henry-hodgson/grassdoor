@@ -3,98 +3,104 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Leave a Review | Pitch Review London</title>
-  <meta name="description" content="Submit a review for a 5-a-side football pitch in London." />
+  <title>Review a football pitch | Grassdoor</title>
+  <meta name="description" content="Rate a London football pitch on Grassdoor." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body>
+<body data-page="review">
   <header class="site-header">
     <div class="container nav">
-      <a href="index.html" class="logo">Pitch Review London</a>
-      <nav>
+      <a href="index.html" class="logo" aria-label="Grassdoor home"><span class="logo-mark">G</span><span>Grassdoor</span></a>
+      <nav aria-label="Primary navigation">
         <ul class="nav-links">
           <li><a href="index.html">Home</a></li>
-          <li><a href="pitches.html">Pitches</a></li>
-          <li><a href="review.html" class="active">Leave a Review</a></li>
+          <li><a href="pitches.html">Find pitches</a></li>
+          <li><a href="review.html" class="active">Write a review</a></li>
         </ul>
       </nav>
     </div>
   </header>
 
-  <main class="container section">
-    <div class="section-heading">
-      <h1>Leave a review</h1>
-      <p>Submit your experience for a London 5-a-side pitch.</p>
+  <main class="container section review-page">
+    <div class="review-intro">
+      <p class="eyebrow">Help the next team</p>
+      <h1>Rate the pitch, not the result.</h1>
+      <p class="lead">A quick, practical review helps other players choose where to book next.</p>
+      <div class="review-help card-soft">
+        <h3>What makes a useful review?</h3>
+        <p>Score what you actually experienced: the surface, standard of opposition, what your team paid and the overall night.</p>
+      </div>
     </div>
 
     <form id="reviewForm" class="review-form card">
-      <label for="reviewer_name">Your name</label>
-      <input
-        type="text"
-        id="reviewer_name"
-        name="reviewer_name"
-        placeholder="Optional"
-      />
+      <div class="field-group">
+        <label for="pitch_id">Pitch</label>
+        <select id="pitch_id" name="pitch_id" required>
+          <option value="">Loading pitches…</option>
+        </select>
+      </div>
 
-      <label for="pitch_id">Pitch ID</label>
-      <input
-        type="number"
-        id="pitch_id"
-        name="pitch_id"
-        placeholder="e.g. 1"
-        required
-      />
+      <div class="field-group">
+        <label for="reviewer_name">Your name <span class="optional">optional</span></label>
+        <input type="text" id="reviewer_name" name="reviewer_name" placeholder="e.g. Henry" maxlength="80" />
+      </div>
 
-      <label for="quality_of_opposition">Quality of opposition (1-5)</label>
-      <select id="quality_of_opposition" name="quality_of_opposition" required>
-        <option value="">Select a score</option>
-        <option value="1">1</option>
-        <option value="2">2</option>
-        <option value="3">3</option>
-        <option value="4">4</option>
-        <option value="5">5</option>
-      </select>
+      <div class="form-two-col">
+        <div class="field-group">
+          <label for="quality_of_pitch">Pitch quality</label>
+          <select id="quality_of_pitch" name="quality_of_pitch" required>
+            <option value="">Choose 1–5</option>
+            <option value="5">5 — Excellent</option>
+            <option value="4">4 — Good</option>
+            <option value="3">3 — Average</option>
+            <option value="2">2 — Poor</option>
+            <option value="1">1 — Very poor</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label for="quality_of_opposition">Opposition quality</label>
+          <select id="quality_of_opposition" name="quality_of_opposition" required>
+            <option value="">Choose 1–5</option>
+            <option value="5">5 — Very strong</option>
+            <option value="4">4 — Strong</option>
+            <option value="3">3 — Balanced</option>
+            <option value="2">2 — Casual</option>
+            <option value="1">1 — Very casual</option>
+          </select>
+        </div>
+      </div>
 
-      <label for="quality_of_pitch">Quality of pitch (1-5)</label>
-      <select id="quality_of_pitch" name="quality_of_pitch" required>
-        <option value="">Select a score</option>
-        <option value="1">1</option>
-        <option value="2">2</option>
-        <option value="3">3</option>
-        <option value="4">4</option>
-        <option value="5">5</option>
-      </select>
+      <div class="form-two-col">
+        <div class="field-group">
+          <label for="price_per_team_per_game">Price per team</label>
+          <div class="money-input"><span>£</span><input type="number" min="0" max="500" step="0.01" id="price_per_team_per_game" name="price_per_team_per_game" placeholder="35.00" required /></div>
+        </div>
+        <div class="field-group">
+          <label for="overall_experience">Overall experience</label>
+          <select id="overall_experience" name="overall_experience" required>
+            <option value="">Choose 1–5</option>
+            <option value="5">5 — Brilliant</option>
+            <option value="4">4 — Good</option>
+            <option value="3">3 — Fine</option>
+            <option value="2">2 — Disappointing</option>
+            <option value="1">1 — Avoid</option>
+          </select>
+        </div>
+      </div>
 
-      <label for="price_per_team_per_game">Price per team per game (£)</label>
-      <input
-        type="number"
-        step="0.01"
-        id="price_per_team_per_game"
-        name="price_per_team_per_game"
-        placeholder="e.g. 35.00"
-        required
-      />
-
-      <label for="overall_experience">Overall experience (1-5)</label>
-      <select id="overall_experience" name="overall_experience" required>
-        <option value="">Select a score</option>
-        <option value="1">1</option>
-        <option value="2">2</option>
-        <option value="3">3</option>
-        <option value="4">4</option>
-        <option value="5">5</option>
-      </select>
-
-      <button type="submit" class="button">Submit review</button>
-
-      <p id="formMessage" class="form-message"></p>
+      <button type="submit" class="button button-block">Submit review</button>
+      <p id="formMessage" class="form-message" role="status"></p>
     </form>
   </main>
 
   <footer class="site-footer">
     <div class="container footer-inner">
-      <p>© 2026 Pitch Review London</p>
-      <p>Built for 5-a-side players in London.</p>
+      <a href="index.html" class="logo"><span class="logo-mark">G</span><span>Grassdoor</span></a>
+      <p>Independent football pitch reviews for London.</p>
+      <p>© 2026 Grassdoor</p>
     </div>
   </footer>
 
