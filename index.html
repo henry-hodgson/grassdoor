@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Grassdoor — London football pitch reviews</title>
-  <meta name="description" content="Find, compare and review football pitches across London." />
+  <title>Grassdoor | London football pitch reviews</title>
+  <meta name="description" content="Find and review football pitches in London. Compare player ratings, format, dimensions and facilities." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
@@ -13,9 +13,7 @@
 <body data-page="home">
   <header class="site-header">
     <div class="container nav">
-      <a href="index.html" class="logo" aria-label="Grassdoor home">
-        <span class="logo-mark">G</span><span>Grassdoor</span>
-      </a>
+      <a href="index.html" class="logo" aria-label="Grassdoor home"><span class="logo-mark">G</span><span>Grassdoor</span></a>
       <nav aria-label="Primary navigation">
         <ul class="nav-links">
           <li><a href="index.html" class="active">Home</a></li>
@@ -27,82 +25,40 @@
   </header>
 
   <main>
-    <section class="hero">
-      <div class="container hero-grid">
-        <div class="hero-copy">
-          <p class="eyebrow">London football, reviewed by players</p>
-          <h1>Know the pitch before you book it.</h1>
-          <p class="lead">Grassdoor helps London players find the right football pitch using real ratings for surface quality, value, facilities and overall experience.</p>
-          <div class="button-row">
-            <a href="pitches.html" class="button">Explore pitches</a>
-            <a href="review.html" class="button button-secondary">Rate a pitch</a>
-          </div>
-          <div class="trust-row" aria-label="Grassdoor features">
-            <span>⚽ Player-led ratings</span>
-            <span>📍 London-wide search</span>
-            <span>💷 Real price feedback</span>
-          </div>
+    <section class="hero container">
+      <div class="hero-copy">
+        <p class="eyebrow">London football, reviewed by players</p>
+        <h1>Know the pitch before you book it.</h1>
+        <p class="lead">Grassdoor helps London players compare pitch quality, format, dimensions, facilities, price paid by other teams and the overall match experience.</p>
+        <div class="button-row">
+          <a href="pitches.html" class="button">Find a pitch</a>
+          <a href="review.html" class="button button-secondary">Rate a pitch</a>
         </div>
-        <aside class="hero-card" aria-label="Example pitch score">
-          <div class="hero-card-top">
-            <span class="tag">Top rated</span>
-            <span class="rating-large">4.7</span>
-          </div>
-          <div>
-            <p class="kicker">West London</p>
-            <h2>Westway Sports Centre</h2>
-            <p class="muted">3G turf · Latimer Road · 5-a-side</p>
-          </div>
-          <div class="score-grid">
-            <div><strong>4.8</strong><span>Pitch</span></div>
-            <div><strong>4.6</strong><span>Value</span></div>
-            <div><strong>4.7</strong><span>Overall</span></div>
-          </div>
-        </aside>
-      </div>
-    </section>
-
-    <section class="container section section-tight">
-      <div class="section-heading split-heading">
-        <div>
-          <p class="eyebrow">Popular right now</p>
-          <h2>Player favourites</h2>
-        </div>
-        <a href="pitches.html" class="text-link">View all pitches →</a>
-      </div>
-      <div id="featuredPitches" class="pitch-grid" aria-live="polite">
-        <div class="loading-card">Loading top-rated pitches…</div>
       </div>
     </section>
 
     <section class="container section">
-      <div class="value-strip">
-        <article>
-          <span class="value-icon">01</span>
-          <h3>Search by what matters</h3>
-          <p>Filter by area, pitch format, surface and price instead of scrolling through generic sports-centre listings.</p>
-        </article>
-        <article>
-          <span class="value-icon">02</span>
-          <h3>See player feedback</h3>
-          <p>Ratings from people who actually played there make it easier to avoid worn surfaces and overpriced bookings.</p>
-        </article>
-        <article>
-          <span class="value-icon">03</span>
-          <h3>Help the next team</h3>
-          <p>Leave a quick review after your match and make London football a little easier to organise.</p>
-        </article>
+      <div class="section-heading split-heading">
+        <div>
+          <p class="eyebrow">Popular pitches</p>
+          <h2>What players are rating</h2>
+          <p>Ratings come from real submissions in Grassdoor's review database.</p>
+        </div>
+        <a href="pitches.html" class="text-link">Browse all pitches →</a>
+      </div>
+      <div id="featuredPitches" class="pitch-grid" aria-live="polite">
+        <div class="loading-card">Loading pitches…</div>
       </div>
     </section>
 
     <section class="container section">
       <div class="feature-banner">
         <div>
-          <p class="eyebrow light">Built for five-a-side nights</p>
-          <h2>Played somewhere recently?</h2>
-          <p>It takes less than a minute to rate the pitch, opposition level, price and overall experience.</p>
+          <p class="eyebrow">Built for match night</p>
+          <h2>Useful details, not generic venue listings.</h2>
+          <p>Check game format, pitch dimensions, walls, overhead netting, showers and who the venue caters for — then see what teams actually paid.</p>
         </div>
-        <a href="review.html" class="button button-light">Write a review</a>
+        <a href="review.html" class="button">Share your experience</a>
       </div>
     </section>
   </main>
