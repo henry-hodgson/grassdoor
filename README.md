@@ -6,15 +6,17 @@ Grassdoor is a mobile-friendly London football pitch review MVP.
 
 - Grassdoor branding and responsive UI
 - Pitch directory with search and filters for area, format, facilities and suitability
-- Individual pitch profile pages via `pitch.html?id=<id>`
+- Interactive London map using Leaflet + OpenStreetMap
+- Pitch markers sourced from nullable Supabase latitude/longitude fields
+- Individual pitch profile pages via `pitch.html?id=<id>` with a location map when coordinates exist
 - Review averages and individual review summaries loaded from Supabase `fct_reviews`
 - Review form with pitch selection and deep-link support via `review.html?pitch=<id>`
 - Pitch metadata loaded from Supabase `dim_pitches`
-- Fallback starter data matching the same schema so the UI does not break if Supabase is temporarily unavailable
+- Fallback starter data so the UI does not break if Supabase is temporarily unavailable
 
-## Exact Supabase pitch schema
+## Supabase pitch schema
 
-The frontend now expects `public.dim_pitches` to contain exactly these fields:
+The frontend expects `public.dim_pitches` to contain:
 
 - `id`
 - `created_at`
@@ -30,8 +32,23 @@ The frontend now expects `public.dim_pitches` to contain exactly these fields:
 - `women`
 - `under_18`
 - `showers`
+- `latitude` (nullable double precision)
+- `longitude` (nullable double precision)
 
-The frontend does not assume that pitch records contain surface, latitude/longitude, borough, description, booking URL or pitch-level price fields.
+Run `supabase/2026-09-08_add_pitch_coordinates.sql` in the Supabase SQL editor to add the two coordinate columns and range checks.
+
+Pitches without coordinates still appear in the directory and review flow; they simply do not receive a map marker until latitude and longitude are populated.
+
+Example coordinate update:
+
+```sql
+update public.dim_pitches
+set latitude = 51.5283,
+    longitude = -0.0862
+where name = 'Powerleague Shoreditch';
+```
+
+Use decimal-degree WGS84 coordinates: positive latitude is north, negative longitude is west.
 
 ## Reviews
 
@@ -59,6 +76,14 @@ Recommended MVP permissions:
 - `dim_pitches`: public SELECT only
 - `fct_reviews`: public SELECT + INSERT only
 - no public UPDATE or DELETE policies
+
+Adding latitude and longitude does not require a new RLS policy; the existing public SELECT policy on `dim_pitches` covers those fields.
+
+## Map
+
+The frontend uses Leaflet with OpenStreetMap tiles, so there is no map API key or map secret to configure.
+
+The directory map automatically follows the active search and filters. Pitch detail pages show a dedicated map when that pitch has valid coordinates.
 
 ## Run locally
 
