@@ -4,11 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Find football pitches in London | Grassdoor</title>
-  <meta name="description" content="Search and compare London football pitches by area, surface, format, price and player rating." />
+  <meta name="description" content="Search and compare London football pitches by area, format, facilities and player rating." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body data-page="pitches">
@@ -29,10 +28,10 @@
     <div class="section-heading directory-heading">
       <p class="eyebrow">Pitch directory</p>
       <h1>Find your next game.</h1>
-      <p>Search London pitches and compare what players actually care about.</p>
+      <p>Compare format, dimensions, facilities, eligibility and ratings from players.</p>
     </div>
 
-    <section class="filter-panel" aria-label="Pitch filters">
+    <section class="filter-panel schema-filters" aria-label="Pitch filters">
       <div class="filter-search">
         <label for="searchInput">Search</label>
         <input id="searchInput" type="search" placeholder="Pitch, area or station" autocomplete="off" />
@@ -42,20 +41,25 @@
         <select id="areaFilter"><option value="">All areas</option></select>
       </div>
       <div>
-        <label for="sizeFilter">Format</label>
-        <select id="sizeFilter"><option value="">All formats</option></select>
+        <label for="formatFilter">Format</label>
+        <select id="formatFilter"><option value="">All formats</option></select>
       </div>
       <div>
-        <label for="surfaceFilter">Surface</label>
-        <select id="surfaceFilter"><option value="">All surfaces</option></select>
+        <label for="facilityFilter">Facility</label>
+        <select id="facilityFilter">
+          <option value="">Any facilities</option>
+          <option value="walls">Walls</option>
+          <option value="overhead_net">Overhead net</option>
+          <option value="showers">Showers</option>
+        </select>
       </div>
       <div>
-        <label for="priceFilter">Price</label>
-        <select id="priceFilter">
-          <option value="">Any price</option>
-          <option value="£">£</option>
-          <option value="££">££</option>
-          <option value="£££">£££</option>
+        <label for="accessFilter">Suitable for</label>
+        <select id="accessFilter">
+          <option value="">Anyone</option>
+          <option value="men">Men</option>
+          <option value="women">Women</option>
+          <option value="under_18">Under 18</option>
         </select>
       </div>
       <button id="clearFilters" class="button button-secondary filter-clear" type="button">Clear</button>
@@ -66,17 +70,10 @@
       <p id="dataSourceNote" class="data-note"></p>
     </div>
 
-    <div class="directory-layout">
-      <section>
-        <div id="pitchGrid" class="pitch-grid directory-grid" aria-live="polite"></div>
-        <div id="emptyState" class="empty-state hidden">
-          <h2>No pitches match those filters.</h2>
-          <p>Try clearing one or two filters.</p>
-        </div>
-      </section>
-      <aside class="map-panel">
-        <div id="pitchMap" aria-label="Map of London football pitches"></div>
-      </aside>
+    <div id="pitchGrid" class="pitch-grid directory-grid" aria-live="polite"></div>
+    <div id="emptyState" class="empty-state hidden">
+      <h2>No pitches match those filters.</h2>
+      <p>Try clearing one or two filters.</p>
     </div>
   </main>
 
@@ -88,7 +85,6 @@
     </div>
   </footer>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="script.js"></script>
 </body>
