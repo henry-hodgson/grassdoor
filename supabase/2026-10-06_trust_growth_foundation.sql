@@ -52,8 +52,7 @@ alter table public.fct_reviews
 
 update public.fct_reviews
 set moderation_status = 'approved'
-where moderation_status = 'pending'
-  and created_at < now() - interval '1 minute';
+where moderation_status = 'pending';
 
 do $$
 begin
