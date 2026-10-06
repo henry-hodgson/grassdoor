@@ -118,7 +118,8 @@ select
   r.quality_of_pitch::numeric as pitch_quality_score,
   r.quality_of_opposition::numeric as opposition_quality_score,
   r.overall_experience::numeric as overall_experience_score,
-  r.price_per_team_per_game::numeric as price_per_team
+  r.price_per_team_per_game::numeric as price_per_team,
+  nullif(trim(r.reviewer_name), '') as reviewer_name
 from public.fct_reviews r
 where r.moderation_status in ('approved');
 
