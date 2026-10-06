@@ -86,9 +86,9 @@ function normalizePitch(row) {
     longitude: numberOrNull(row.longitude),
     venue_id: numberOrNull(row.venue_id),
     surface_type: row.surface_type || "",
-    indoor: row.indoor === true,
-    changing_rooms: row.changing_rooms === true,
-    parking: row.parking === true,
+    indoor: row.indoor == null ? null : row.indoor === true,
+    changing_rooms: row.changing_rooms == null ? null : row.changing_rooms === true,
+    parking: row.parking == null ? null : row.parking === true,
     booking_url: row.venue?.booking_url || "",
     website_url: row.venue?.website_url || ""
   };
@@ -356,7 +356,8 @@ async function initPitches() {
 }
 
 function booleanDetail(label, value) {
-  return `<div><dt>${escapeHtml(label)}</dt><dd>${value ? "Yes" : "No"}</dd></div>`;
+  const display = value == null ? "Not listed" : value ? "Yes" : "No";
+  return `<div><dt>${escapeHtml(label)}</dt><dd>${display}</dd></div>`;
 }
 
 async function initPitchDetail() {
@@ -388,10 +389,12 @@ async function initPitchDetail() {
           </div>
           <span class="rating">★ ${Number(review.overall_experience).toFixed(1)}</span>
         </div>
+        ${review.review_text ? `<p class="review-copy">${escapeHtml(review.review_text)}</p>` : ""}
         <div class="review-metrics">
           <span>Pitch <strong>${escapeHtml(review.quality_of_pitch)}/5</strong></span>
           <span>Opposition <strong>${escapeHtml(review.quality_of_opposition)}/5</strong></span>
           <span>Paid <strong>£${Number(review.price_per_team_per_game).toFixed(2)}</strong></span>
+          ${review.would_book_again === true ? "<span>Would book again ✓</span>" : ""}
         </div>
       </article>`).join("")
     : '<div class="empty-state compact"><h3>No reviews yet.</h3><p>Be the first player to rate this pitch.</p></div>';
@@ -499,6 +502,13 @@ async function initReviewForm() {
 
   if (requested && pitches.some((pitch) => String(pitch.id) === requested)) select.value = requested;
 
+  let reviewStarted = false;
+  form.addEventListener("focusin", () => {
+    if (reviewStarted) return;
+    reviewStarted = true;
+    trackEvent("review_started", { pitchId: numberOrNull(select.value) });
+  });
+
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (!supabaseClient) {
@@ -516,13 +526,21 @@ async function initReviewForm() {
       quality_of_opposition: Number(document.getElementById("quality_of_opposition").value),
       quality_of_pitch: Number(document.getElementById("quality_of_pitch").value),
       price_per_team_per_game: Number(document.getElementById("price_per_team_per_game").value),
-      overall_experience: Number(document.getElementById("overall_experience").value)
+      overall_experience: Number(document.getElementById("overall_experience").value),
+      review_text: document.getElementById("review_text")?.value.trim() || null
     };
 
-    const { error } = await supabaseClient.from("fct_reviews").insert([payload]);
-    if (error) {
-      console.error("Supabase insert error:", error);
-      message.textContent = `Could not save review: ${error.message}`;
+    let insertResult = await supabaseClient.from("fct_reviews").insert([payload]);
+
+    if (insertResult.error && /review_text|schema cache|column/i.test(insertResult.error.message || "")) {
+      const legacyPayload = { ...payload };
+      delete legacyPayload.review_text;
+      insertResult = await supabaseClient.from("fct_reviews").insert([legacyPayload]);
+    }
+
+    if (insertResult.error) {
+      console.error("Supabase insert error:", insertResult.error);
+      message.textContent = `Could not save review: ${insertResult.error.message}`;
       message.className = "form-message error";
       return;
     }
@@ -531,7 +549,8 @@ async function initReviewForm() {
     cachedReviews = null;
     form.reset();
     select.value = String(reviewedPitch);
-    message.textContent = "Thanks — your review has been saved.";
+    trackEvent("review_submitted", { pitchId: reviewedPitch });
+    message.textContent = "Thanks — your review has been submitted. New reviews may be checked before appearing publicly.";
     message.className = "form-message success";
   });
 }
