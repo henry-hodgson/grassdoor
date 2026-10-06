@@ -186,9 +186,13 @@ const formatDimensions = (pitch) => pitch.length && pitch.width ? `${pitch.lengt
 
 function featureLabels(pitch) {
   const labels = [];
+  if (pitch.surface_type) labels.push(pitch.surface_type);
+  if (pitch.indoor) labels.push("Indoor");
   if (pitch.walls) labels.push("Walls");
   if (pitch.overhead_net) labels.push("Overhead net");
   if (pitch.showers) labels.push("Showers");
+  if (pitch.changing_rooms) labels.push("Changing rooms");
+  if (pitch.parking) labels.push("Parking");
   return labels;
 }
 
@@ -369,6 +373,7 @@ async function initPitchDetail() {
   }
 
   const stats = getPitchStats(pitch.id, reviews);
+  trackEvent("pitch_view", { pitchId: pitch.id });
   const facilities = featureLabels(pitch);
   const access = accessLabels(pitch);
   document.title = `${pitch.name} reviews | Grassdoor`;
@@ -405,7 +410,10 @@ async function initPitchDetail() {
         </div>
         <h1>${escapeHtml(pitch.name)}</h1>
         <p class="lead">${escapeHtml(pitch.nearest_station ? `Nearest station: ${pitch.nearest_station}` : "London football pitch")}</p>
-        <div class="button-row"><a class="button" href="review.html?pitch=${encodeURIComponent(pitch.id)}">Write a review</a></div>
+        <div class="button-row">
+          <a class="button" href="review.html?pitch=${encodeURIComponent(pitch.id)}">Write a review</a>
+          ${pitch.booking_url ? `<a id="bookingLink" class="button button-secondary" href="${escapeHtml(pitch.booking_url)}" target="_blank" rel="noopener noreferrer">Check booking options ↗</a>` : ""}
+        </div>
       </div>
       <div class="rating-panel">
         <div class="rating-main"><span>${formatScore(stats.overall)}</span><small>${stats.count ? `${stats.count} review${stats.count === 1 ? "" : "s"}` : "No reviews yet"}</small></div>
@@ -423,9 +431,13 @@ async function initPitchDetail() {
           <div><dt>Dimensions</dt><dd>${escapeHtml(formatDimensions(pitch))}</dd></div>
           <div><dt>Area</dt><dd>${escapeHtml(pitch.area)}</dd></div>
           <div><dt>Nearest station</dt><dd>${escapeHtml(pitch.nearest_station || "Not listed")}</dd></div>
+          ${pitch.surface_type ? `<div><dt>Surface</dt><dd>${escapeHtml(pitch.surface_type)}</dd></div>` : ""}
+          ${booleanDetail("Indoor", pitch.indoor)}
           ${booleanDetail("Walls", pitch.walls)}
           ${booleanDetail("Overhead net", pitch.overhead_net)}
           ${booleanDetail("Showers", pitch.showers)}
+          ${booleanDetail("Changing rooms", pitch.changing_rooms)}
+          ${booleanDetail("Parking", pitch.parking)}
         </dl>
       </div>
       <div class="card detail-card">
@@ -448,6 +460,16 @@ async function initPitchDetail() {
       </div>
       <div class="review-list">${reviewRows}</div>
     </section>`;
+
+  const bookingLink = document.getElementById("bookingLink");
+  if (bookingLink) {
+    bookingLink.addEventListener("click", () => {
+      trackEvent("booking_click", {
+        pitchId: pitch.id,
+        destinationUrl: pitch.booking_url
+      });
+    });
+  }
 
   if (hasCoordinates(pitch)) {
     const map = createBaseMap("detailMap", [pitch.latitude, pitch.longitude], 14);
