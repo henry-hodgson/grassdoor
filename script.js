@@ -343,6 +343,16 @@ async function initPitches() {
     element.addEventListener(element.tagName === "INPUT" ? "input" : "change", render);
   });
 
+  let searchEventTimer = null;
+  search.addEventListener("input", () => {
+    clearTimeout(searchEventTimer);
+    const query = search.value.trim();
+    if (query.length < 2) return;
+    searchEventTimer = setTimeout(() => {
+      trackEvent("directory_search", { metadata: { query_length: query.length } });
+    }, 600);
+  });
+
   document.getElementById("clearFilters").addEventListener("click", () => {
     search.value = "";
     area.value = "";
