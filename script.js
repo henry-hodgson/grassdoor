@@ -51,7 +51,14 @@ function normalizePitch(row) {
     under_18: row.under_18 === true,
     showers: row.showers === true,
     latitude: numberOrNull(row.latitude),
-    longitude: numberOrNull(row.longitude)
+    longitude: numberOrNull(row.longitude),
+    venue_id: numberOrNull(row.venue_id),
+    surface_type: row.surface_type || "",
+    indoor: row.indoor === true,
+    changing_rooms: row.changing_rooms === true,
+    parking: row.parking === true,
+    booking_url: row.venue?.booking_url || "",
+    website_url: row.venue?.website_url || ""
   };
 }
 
@@ -69,15 +76,26 @@ async function loadPitches() {
   if (!supabaseClient) return (cachedPitches = FALLBACK_PITCHES.map(normalizePitch));
 
   try {
-    const { data, error } = await supabaseClient
+    const enriched = await supabaseClient
+      .from("dim_pitches")
+      .select("id, created_at, name, area, nearest_station, game_format, length, width, walls, overhead_net, men, women, under_18, showers, latitude, longitude, venue_id, surface_type, indoor, changing_rooms, parking, venue:venues(booking_url, website_url)")
+      .order("name", { ascending: true });
+
+    if (!enriched.error && Array.isArray(enriched.data) && enriched.data.length) {
+      pitchDataSource = "dim_pitches";
+      cachedPitches = enriched.data.map(normalizePitch);
+      return cachedPitches;
+    }
+
+    const legacy = await supabaseClient
       .from("dim_pitches")
       .select("id, created_at, name, area, nearest_station, game_format, length, width, walls, overhead_net, men, women, under_18, showers, latitude, longitude")
       .order("name", { ascending: true });
 
-    if (error) throw error;
-    if (Array.isArray(data) && data.length) {
+    if (legacy.error) throw legacy.error;
+    if (Array.isArray(legacy.data) && legacy.data.length) {
       pitchDataSource = "dim_pitches";
-      cachedPitches = data.map(normalizePitch);
+      cachedPitches = legacy.data.map(normalizePitch);
       return cachedPitches;
     }
   } catch (error) {
@@ -93,9 +111,19 @@ async function loadReviews() {
   if (!supabaseClient) return (cachedReviews = []);
 
   try {
-    const { data, error } = await supabaseClient.from("fct_reviews").select("*");
-    if (error) throw error;
-    cachedReviews = Array.isArray(data) ? data : [];
+    const moderated = await supabaseClient
+      .from("fct_reviews")
+      .select("*")
+      .eq("moderation_status", "approved");
+
+    if (!moderated.error) {
+      cachedReviews = Array.isArray(moderated.data) ? moderated.data : [];
+      return cachedReviews;
+    }
+
+    const legacy = await supabaseClient.from("fct_reviews").select("*");
+    if (legacy.error) throw legacy.error;
+    cachedReviews = Array.isArray(legacy.data) ? legacy.data : [];
   } catch (error) {
     console.warn("Could not load reviews.", error);
     cachedReviews = [];
