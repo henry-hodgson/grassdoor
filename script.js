@@ -34,6 +34,38 @@ const numberOrNull = (value) => {
   return Number.isFinite(n) ? n : null;
 };
 
+function getAnonymousSessionId() {
+  try {
+    const key = "grassdoor_session_id";
+    let value = sessionStorage.getItem(key);
+    if (!value) {
+      value = window.crypto?.randomUUID?.() || `gd-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      sessionStorage.setItem(key, value);
+    }
+    return value;
+  } catch (_) {
+    return null;
+  }
+}
+
+async function trackEvent(eventName, details = {}) {
+  if (!supabaseClient) return;
+  const payload = {
+    event_name: eventName,
+    pitch_id: details.pitchId ?? null,
+    anonymous_session_id: getAnonymousSessionId(),
+    page_path: location.pathname,
+    destination_url: details.destinationUrl ?? null,
+    metadata: details.metadata ?? {}
+  };
+
+  try {
+    await supabaseClient.from("product_events").insert([payload]);
+  } catch (_) {
+    // Analytics should never block the product experience.
+  }
+}
+
 function normalizePitch(row) {
   return {
     id: numberOrNull(row.id),
@@ -51,7 +83,14 @@ function normalizePitch(row) {
     under_18: row.under_18 === true,
     showers: row.showers === true,
     latitude: numberOrNull(row.latitude),
-    longitude: numberOrNull(row.longitude)
+    longitude: numberOrNull(row.longitude),
+    venue_id: numberOrNull(row.venue_id),
+    surface_type: row.surface_type || "",
+    indoor: row.indoor == null ? null : row.indoor === true,
+    changing_rooms: row.changing_rooms == null ? null : row.changing_rooms === true,
+    parking: row.parking == null ? null : row.parking === true,
+    booking_url: row.venue?.booking_url || "",
+    website_url: row.venue?.website_url || ""
   };
 }
 
@@ -69,15 +108,26 @@ async function loadPitches() {
   if (!supabaseClient) return (cachedPitches = FALLBACK_PITCHES.map(normalizePitch));
 
   try {
-    const { data, error } = await supabaseClient
+    const enriched = await supabaseClient
+      .from("dim_pitches")
+      .select("id, created_at, name, area, nearest_station, game_format, length, width, walls, overhead_net, men, women, under_18, showers, latitude, longitude, venue_id, surface_type, indoor, changing_rooms, parking, venue:venues(booking_url, website_url)")
+      .order("name", { ascending: true });
+
+    if (!enriched.error && Array.isArray(enriched.data) && enriched.data.length) {
+      pitchDataSource = "dim_pitches";
+      cachedPitches = enriched.data.map(normalizePitch);
+      return cachedPitches;
+    }
+
+    const legacy = await supabaseClient
       .from("dim_pitches")
       .select("id, created_at, name, area, nearest_station, game_format, length, width, walls, overhead_net, men, women, under_18, showers, latitude, longitude")
       .order("name", { ascending: true });
 
-    if (error) throw error;
-    if (Array.isArray(data) && data.length) {
+    if (legacy.error) throw legacy.error;
+    if (Array.isArray(legacy.data) && legacy.data.length) {
       pitchDataSource = "dim_pitches";
-      cachedPitches = data.map(normalizePitch);
+      cachedPitches = legacy.data.map(normalizePitch);
       return cachedPitches;
     }
   } catch (error) {
@@ -93,9 +143,19 @@ async function loadReviews() {
   if (!supabaseClient) return (cachedReviews = []);
 
   try {
-    const { data, error } = await supabaseClient.from("fct_reviews").select("*");
-    if (error) throw error;
-    cachedReviews = Array.isArray(data) ? data : [];
+    const moderated = await supabaseClient
+      .from("fct_reviews")
+      .select("*")
+      .eq("moderation_status", "approved");
+
+    if (!moderated.error) {
+      cachedReviews = Array.isArray(moderated.data) ? moderated.data : [];
+      return cachedReviews;
+    }
+
+    const legacy = await supabaseClient.from("fct_reviews").select("*");
+    if (legacy.error) throw legacy.error;
+    cachedReviews = Array.isArray(legacy.data) ? legacy.data : [];
   } catch (error) {
     console.warn("Could not load reviews.", error);
     cachedReviews = [];
@@ -126,9 +186,13 @@ const formatDimensions = (pitch) => pitch.length && pitch.width ? `${pitch.lengt
 
 function featureLabels(pitch) {
   const labels = [];
+  if (pitch.surface_type) labels.push(pitch.surface_type);
+  if (pitch.indoor) labels.push("Indoor");
   if (pitch.walls) labels.push("Walls");
   if (pitch.overhead_net) labels.push("Overhead net");
   if (pitch.showers) labels.push("Showers");
+  if (pitch.changing_rooms) labels.push("Changing rooms");
+  if (pitch.parking) labels.push("Parking");
   return labels;
 }
 
@@ -279,6 +343,16 @@ async function initPitches() {
     element.addEventListener(element.tagName === "INPUT" ? "input" : "change", render);
   });
 
+  let searchEventTimer = null;
+  search.addEventListener("input", () => {
+    clearTimeout(searchEventTimer);
+    const query = search.value.trim();
+    if (query.length < 2) return;
+    searchEventTimer = setTimeout(() => {
+      trackEvent("directory_search", { metadata: { query_length: query.length } });
+    }, 600);
+  });
+
   document.getElementById("clearFilters").addEventListener("click", () => {
     search.value = "";
     area.value = "";
@@ -292,7 +366,8 @@ async function initPitches() {
 }
 
 function booleanDetail(label, value) {
-  return `<div><dt>${escapeHtml(label)}</dt><dd>${value ? "Yes" : "No"}</dd></div>`;
+  const display = value == null ? "Not listed" : value ? "Yes" : "No";
+  return `<div><dt>${escapeHtml(label)}</dt><dd>${display}</dd></div>`;
 }
 
 async function initPitchDetail() {
@@ -309,6 +384,7 @@ async function initPitchDetail() {
   }
 
   const stats = getPitchStats(pitch.id, reviews);
+  trackEvent("pitch_view", { pitchId: pitch.id });
   const facilities = featureLabels(pitch);
   const access = accessLabels(pitch);
   document.title = `${pitch.name} reviews | Grassdoor`;
@@ -323,10 +399,12 @@ async function initPitchDetail() {
           </div>
           <span class="rating">★ ${Number(review.overall_experience).toFixed(1)}</span>
         </div>
+        ${review.review_text ? `<p class="review-copy">${escapeHtml(review.review_text)}</p>` : ""}
         <div class="review-metrics">
           <span>Pitch <strong>${escapeHtml(review.quality_of_pitch)}/5</strong></span>
           <span>Opposition <strong>${escapeHtml(review.quality_of_opposition)}/5</strong></span>
           <span>Paid <strong>£${Number(review.price_per_team_per_game).toFixed(2)}</strong></span>
+          ${review.would_book_again === true ? "<span>Would book again ✓</span>" : ""}
         </div>
       </article>`).join("")
     : '<div class="empty-state compact"><h3>No reviews yet.</h3><p>Be the first player to rate this pitch.</p></div>';
@@ -345,7 +423,10 @@ async function initPitchDetail() {
         </div>
         <h1>${escapeHtml(pitch.name)}</h1>
         <p class="lead">${escapeHtml(pitch.nearest_station ? `Nearest station: ${pitch.nearest_station}` : "London football pitch")}</p>
-        <div class="button-row"><a class="button" href="review.html?pitch=${encodeURIComponent(pitch.id)}">Write a review</a></div>
+        <div class="button-row">
+          <a class="button" href="review.html?pitch=${encodeURIComponent(pitch.id)}">Write a review</a>
+          ${pitch.booking_url ? `<a id="bookingLink" class="button button-secondary" href="${escapeHtml(pitch.booking_url)}" target="_blank" rel="noopener noreferrer">Check booking options ↗</a>` : ""}
+        </div>
       </div>
       <div class="rating-panel">
         <div class="rating-main"><span>${formatScore(stats.overall)}</span><small>${stats.count ? `${stats.count} review${stats.count === 1 ? "" : "s"}` : "No reviews yet"}</small></div>
@@ -363,9 +444,13 @@ async function initPitchDetail() {
           <div><dt>Dimensions</dt><dd>${escapeHtml(formatDimensions(pitch))}</dd></div>
           <div><dt>Area</dt><dd>${escapeHtml(pitch.area)}</dd></div>
           <div><dt>Nearest station</dt><dd>${escapeHtml(pitch.nearest_station || "Not listed")}</dd></div>
+          ${pitch.surface_type ? `<div><dt>Surface</dt><dd>${escapeHtml(pitch.surface_type)}</dd></div>` : ""}
+          ${booleanDetail("Indoor", pitch.indoor)}
           ${booleanDetail("Walls", pitch.walls)}
           ${booleanDetail("Overhead net", pitch.overhead_net)}
           ${booleanDetail("Showers", pitch.showers)}
+          ${booleanDetail("Changing rooms", pitch.changing_rooms)}
+          ${booleanDetail("Parking", pitch.parking)}
         </dl>
       </div>
       <div class="card detail-card">
@@ -388,6 +473,16 @@ async function initPitchDetail() {
       </div>
       <div class="review-list">${reviewRows}</div>
     </section>`;
+
+  const bookingLink = document.getElementById("bookingLink");
+  if (bookingLink) {
+    bookingLink.addEventListener("click", () => {
+      trackEvent("booking_click", {
+        pitchId: pitch.id,
+        destinationUrl: pitch.booking_url
+      });
+    });
+  }
 
   if (hasCoordinates(pitch)) {
     const map = createBaseMap("detailMap", [pitch.latitude, pitch.longitude], 14);
@@ -417,6 +512,13 @@ async function initReviewForm() {
 
   if (requested && pitches.some((pitch) => String(pitch.id) === requested)) select.value = requested;
 
+  let reviewStarted = false;
+  form.addEventListener("focusin", () => {
+    if (reviewStarted) return;
+    reviewStarted = true;
+    trackEvent("review_started", { pitchId: numberOrNull(select.value) });
+  });
+
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (!supabaseClient) {
@@ -434,13 +536,21 @@ async function initReviewForm() {
       quality_of_opposition: Number(document.getElementById("quality_of_opposition").value),
       quality_of_pitch: Number(document.getElementById("quality_of_pitch").value),
       price_per_team_per_game: Number(document.getElementById("price_per_team_per_game").value),
-      overall_experience: Number(document.getElementById("overall_experience").value)
+      overall_experience: Number(document.getElementById("overall_experience").value),
+      review_text: document.getElementById("review_text")?.value.trim() || null
     };
 
-    const { error } = await supabaseClient.from("fct_reviews").insert([payload]);
-    if (error) {
-      console.error("Supabase insert error:", error);
-      message.textContent = `Could not save review: ${error.message}`;
+    let insertResult = await supabaseClient.from("fct_reviews").insert([payload]);
+
+    if (insertResult.error && /review_text|schema cache|column/i.test(insertResult.error.message || "")) {
+      const legacyPayload = { ...payload };
+      delete legacyPayload.review_text;
+      insertResult = await supabaseClient.from("fct_reviews").insert([legacyPayload]);
+    }
+
+    if (insertResult.error) {
+      console.error("Supabase insert error:", insertResult.error);
+      message.textContent = `Could not save review: ${insertResult.error.message}`;
       message.className = "form-message error";
       return;
     }
@@ -449,7 +559,8 @@ async function initReviewForm() {
     cachedReviews = null;
     form.reset();
     select.value = String(reviewedPitch);
-    message.textContent = "Thanks — your review has been saved.";
+    trackEvent("review_submitted", { pitchId: reviewedPitch });
+    message.textContent = "Thanks — your review has been submitted. New reviews may be checked before appearing publicly.";
     message.className = "form-message success";
   });
 }

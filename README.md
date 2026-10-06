@@ -10,6 +10,9 @@ Grassdoor is a mobile-friendly London football pitch review product.
 - Browse pitch locations on an interactive Leaflet/OpenStreetMap map
 - Read pitch-specific player reviews
 - Submit structured reviews directly to Supabase
+- Moderate new reviews before publishing them
+- Track pitch views and outbound booking intent
+- Support venue-level booking URLs and richer pitch facilities
 - Continue rendering fallback pitch data if Supabase is temporarily unavailable
 
 ## Data architecture
@@ -21,7 +24,7 @@ The operational app uses:
 
 Run the SQL files in `supabase/` in date order. The October 2026 migration adds data-quality constraints, indexes and a `warehouse` analytics schema with pitch, area and monthly marts.
 
-See `docs/data-platform.md` for the model and example queries.
+See `docs/data-platform.md` for the warehouse model and `docs/trust-and-growth.md` for venues, moderation, product analytics and the account-ready schema.
 
 ## Security
 
