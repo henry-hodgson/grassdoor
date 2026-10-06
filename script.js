@@ -34,6 +34,38 @@ const numberOrNull = (value) => {
   return Number.isFinite(n) ? n : null;
 };
 
+function getAnonymousSessionId() {
+  try {
+    const key = "grassdoor_session_id";
+    let value = sessionStorage.getItem(key);
+    if (!value) {
+      value = window.crypto?.randomUUID?.() || `gd-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      sessionStorage.setItem(key, value);
+    }
+    return value;
+  } catch (_) {
+    return null;
+  }
+}
+
+async function trackEvent(eventName, details = {}) {
+  if (!supabaseClient) return;
+  const payload = {
+    event_name: eventName,
+    pitch_id: details.pitchId ?? null,
+    anonymous_session_id: getAnonymousSessionId(),
+    page_path: location.pathname,
+    destination_url: details.destinationUrl ?? null,
+    metadata: details.metadata ?? {}
+  };
+
+  try {
+    await supabaseClient.from("product_events").insert([payload]);
+  } catch (_) {
+    // Analytics should never block the product experience.
+  }
+}
+
 function normalizePitch(row) {
   return {
     id: numberOrNull(row.id),
