@@ -29,3 +29,8 @@
 .feature-banner-upgraded{background:#102116;box-shadow:0 24px 70px rgba(16,33,22,.16);padding:2.5rem}.feature-banner-upgraded .eyebrow{color:var(--accent)}.feature-banner-upgraded p:not(.eyebrow){color:#cbd8ce;max-width:650px}
 @media(max-width:900px){.hero-grid{grid-template-columns:1fr;gap:2.2rem;padding-top:4.2rem;padding-bottom:4.2rem}.hero-scorecard{max-width:620px;transform:none}.value-grid{grid-template-columns:1fr}.value-card{min-height:0}.value-number{margin-bottom:1.2rem}}
 @media(max-width:760px){.hero-grid h1{font-size:clamp(3rem,15vw,4.8rem)}.hero-proof{display:grid;gap:.5rem}.mini-pitch{height:180px}.trust-strip{justify-content:flex-start}.score-grid{grid-template-columns:repeat(3,1fr)}}
+
+/* Trust + review polish */
+.review-copy{font-size:1rem;line-height:1.65;margin:.9rem 0 0;color:#27382d}
+.field-help{margin:.45rem 0 0;color:var(--muted);font-size:.82rem}
+.review-form textarea{resize:vertical;min-height:110px}
