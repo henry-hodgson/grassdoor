@@ -91,6 +91,9 @@ function normalizePitch(row) {
     parking: row.parking == null ? null : row.parking === true,
     booking_url: row.venue?.booking_url || "",
     website_url: row.venue?.website_url || "",
+    balls_provided: row.balls_provided === true,
+    referee_available: row.referee_available === true,
+    supported_game_types: Array.isArray(row.supported_game_types) ? row.supported_game_types : [],
     available_days: Array.isArray(row.available_days)
       ? row.available_days
       : ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
@@ -113,7 +116,7 @@ async function loadPitches() {
   try {
     const enriched = await supabaseClient
       .from("dim_pitches")
-      .select("id, created_at, name, area, nearest_station, game_format, length, width, walls, overhead_net, men, women, under_18, showers, latitude, longitude, venue_id, surface_type, indoor, changing_rooms, parking, available_days, venue:venues(booking_url, website_url)")
+      .select("id, created_at, name, area, nearest_station, game_format, length, width, walls, overhead_net, men, women, under_18, showers, latitude, longitude, venue_id, surface_type, indoor, changing_rooms, parking, balls_provided, referee_available, supported_game_types, available_days, venue:venues(booking_url, website_url)")
       .order("name", { ascending: true });
 
     if (!enriched.error && Array.isArray(enriched.data) && enriched.data.length) {
@@ -175,7 +178,6 @@ function getPitchStats(id, reviews) {
   const matching = reviews.filter((review) => Number(review.pitch_id) === Number(id));
   return {
     count: matching.length,
-    overall: average(matching.map((r) => r.overall_experience)),
     pitchQuality: average(matching.map((r) => r.quality_of_pitch)),
     opposition: average(matching.map((r) => r.quality_of_opposition)),
     price: average(matching.map((r) => r.price_per_team_per_game)),
@@ -191,24 +193,18 @@ function featureLabels(pitch) {
   const labels = [];
   if (pitch.surface_type) labels.push(pitch.surface_type);
   if (pitch.indoor) labels.push("Indoor");
-  if (pitch.walls) labels.push("Walls");
-  if (pitch.overhead_net) labels.push("Overhead net");
+  if (pitch.balls_provided) labels.push("Balls");
+  if (pitch.referee_available) labels.push("Referee");
   if (pitch.showers) labels.push("Showers");
-  if (pitch.changing_rooms) labels.push("Changing rooms");
-  if (pitch.parking) labels.push("Parking");
   return labels;
 }
 
 function accessLabels(pitch) {
-  const labels = [];
-  if (pitch.men) labels.push("Men");
-  if (pitch.women) labels.push("Women");
-  if (pitch.under_18) labels.push("Under 18");
-  return labels;
+  return pitch.supported_game_types || [];
 }
 
 function pitchCardHtml(pitch, stats) {
-  const rating = Number.isFinite(stats.overall) ? `★ ${stats.overall.toFixed(1)}` : "New";
+  const rating = Number.isFinite(stats.pitchQuality) ? `★ ${stats.pitchQuality.toFixed(1)}` : "New";
   const features = featureLabels(pitch);
   const secondary = [pitch.nearest_station, formatDimensions(pitch)].filter(Boolean).join(" · ");
 
@@ -239,7 +235,7 @@ async function initHome() {
   const [pitches, reviews] = await Promise.all([loadPitches(), loadReviews()]);
   el.innerHTML = pitches
     .map((pitch) => ({ pitch, stats: getPitchStats(pitch.id, reviews) }))
-    .sort((a, b) => (b.stats.overall ?? 0) - (a.stats.overall ?? 0))
+    .sort((a, b) => (b.stats.pitchQuality ?? 0) - (a.stats.pitchQuality ?? 0))
     .slice(0, 3)
     .map(({ pitch, stats }) => pitchCardHtml(pitch, stats))
     .join("");
@@ -265,7 +261,7 @@ function createBaseMap(elementId, center = [51.5074, -0.1278], zoom = 10) {
 
 function addPitchMarker(layer, pitch, stats) {
   if (!hasCoordinates(pitch)) return null;
-  const rating = Number.isFinite(stats.overall) ? `★ ${stats.overall.toFixed(1)}` : "No ratings yet";
+  const rating = Number.isFinite(stats.pitchQuality) ? `★ ${stats.pitchQuality.toFixed(1)}` : "No ratings yet";
   return L.marker([pitch.latitude, pitch.longitude])
     .bindPopup(`
       <strong>${escapeHtml(pitch.name)}</strong><br>
@@ -286,7 +282,7 @@ async function initPitches() {
   const format = document.getElementById("formatFilter");
   const day = document.getElementById("dayFilter");
   const facility = document.getElementById("facilityFilter");
-  const access = document.getElementById("accessFilter");
+  const gameType = document.getElementById("gameTypeFilter");
   const count = document.getElementById("resultCount");
   const empty = document.getElementById("emptyState");
   const note = document.getElementById("dataSourceNote");
@@ -295,7 +291,7 @@ async function initPitches() {
   const markerLayer = map ? L.layerGroup().addTo(map) : null;
 
   populateSelect(area, pitches.map((p) => p.area), "All areas");
-  populateSelect(format, pitches.map((p) => p.game_format), "All formats");
+
 
   if (note) {
     note.textContent = pitchDataSource === "dim_pitches"
@@ -335,7 +331,7 @@ async function initPitches() {
         && (!format.value || pitch.game_format === format.value)
         && (!day.value || pitch.available_days.includes(day.value))
         && (!facility.value || pitch[facility.value] === true)
-        && (!access.value || pitch[access.value] === true);
+        && (!gameType.value || pitch.supported_game_types.includes(gameType.value));
     });
 
     count.textContent = `${filtered.length} pitch${filtered.length === 1 ? "" : "es"}`;
@@ -344,7 +340,7 @@ async function initPitches() {
     renderMap(filtered);
   }
 
-  [search, area, format, day, facility, access].forEach((element) => {
+  [search, area, format, day, facility, gameType].forEach((element) => {
     element.addEventListener(element.tagName === "INPUT" ? "input" : "change", render);
   });
 
@@ -364,7 +360,7 @@ async function initPitches() {
     format.value = "";
     day.value = "";
     facility.value = "";
-    access.value = "";
+    gameType.value = "";
     render();
   });
 
@@ -403,7 +399,7 @@ async function initPitchDetail() {
             <strong>${escapeHtml(review.reviewer_name || "Anonymous player")}</strong>
             <p class="muted">Player review</p>
           </div>
-          <span class="rating">★ ${Number(review.overall_experience).toFixed(1)}</span>
+          <span class="rating">★ ${Number(review.quality_of_pitch).toFixed(1)}</span>
         </div>
         ${review.review_text ? `<p class="review-copy">${escapeHtml(review.review_text)}</p>` : ""}
         <div class="review-metrics">
@@ -411,7 +407,11 @@ async function initPitchDetail() {
           <span>Opposition <strong>${escapeHtml(review.quality_of_opposition)}/5</strong></span>
           <span>Paid <strong>£${Number(review.price_per_team_per_game).toFixed(2)}</strong></span>
           ${review.day_of_week ? `<span>${escapeHtml(review.day_of_week)}</span>` : ""}
-          ${review.would_book_again === true ? "<span>Would book again ✓</span>" : ""}
+          ${review.game_format ? `<span>${escapeHtml(review.game_format)}</span>` : ""}
+          ${review.game_type ? `<span>${escapeHtml(review.game_type)}</span>` : ""}
+          ${review.facility_balls ? "<span>Balls ✓</span>" : ""}
+          ${review.facility_referee ? "<span>Referee ✓</span>" : ""}
+          ${review.facility_showers ? "<span>Showers ✓</span>" : ""}
         </div>
       </article>`).join("")
     : '<div class="empty-state compact"><h3>No reviews yet.</h3><p>Be the first player to rate this pitch.</p></div>';
@@ -436,9 +436,8 @@ async function initPitchDetail() {
         </div>
       </div>
       <div class="rating-panel">
-        <div class="rating-main"><span>${formatScore(stats.overall)}</span><small>${stats.count ? `${stats.count} review${stats.count === 1 ? "" : "s"}` : "No reviews yet"}</small></div>
-        <div class="rating-row"><span>Pitch quality</span><strong>${formatScore(stats.pitchQuality)}</strong></div>
-        <div class="rating-row"><span>Opposition</span><strong>${formatScore(stats.opposition)}</strong></div>
+        <div class="rating-main"><span>${formatScore(stats.pitchQuality)}</span><small>Pitch quality · ${stats.count ? `${stats.count} review${stats.count === 1 ? "" : "s"}` : "No reviews yet"}</small></div>
+        <div class="rating-row"><span>Opposition quality</span><strong>${formatScore(stats.opposition)}</strong></div>
         <div class="rating-row"><span>Avg. team price</span><strong>${formatPrice(stats.price)}</strong></div>
       </div>
     </section>
@@ -452,12 +451,9 @@ async function initPitchDetail() {
           <div><dt>Area</dt><dd>${escapeHtml(pitch.area)}</dd></div>
           <div><dt>Nearest station</dt><dd>${escapeHtml(pitch.nearest_station || "Not listed")}</dd></div>
           ${pitch.surface_type ? `<div><dt>Surface</dt><dd>${escapeHtml(pitch.surface_type)}</dd></div>` : ""}
-          ${booleanDetail("Indoor", pitch.indoor)}
-          ${booleanDetail("Walls", pitch.walls)}
-          ${booleanDetail("Overhead net", pitch.overhead_net)}
+          ${booleanDetail("Balls", pitch.balls_provided)}
+          ${booleanDetail("Referee", pitch.referee_available)}
           ${booleanDetail("Showers", pitch.showers)}
-          ${booleanDetail("Changing rooms", pitch.changing_rooms)}
-          ${booleanDetail("Parking", pitch.parking)}
         </dl>
       </div>
       <div class="card detail-card">
@@ -519,6 +515,16 @@ async function initReviewForm() {
 
   if (requested && pitches.some((pitch) => String(pitch.id) === requested)) select.value = requested;
 
+  const formatSelect = document.getElementById("game_format");
+  const syncFormatToPitch = () => {
+    const pitch = pitches.find((item) => String(item.id) === String(select.value));
+    if (pitch && ["5-a-side", "7-a-side", "11-a-side"].includes(pitch.game_format)) {
+      formatSelect.value = pitch.game_format;
+    }
+  };
+  select.addEventListener("change", syncFormatToPitch);
+  syncFormatToPitch();
+
   let reviewStarted = false;
   form.addEventListener("focusin", () => {
     if (reviewStarted) return;
@@ -538,24 +544,19 @@ async function initReviewForm() {
     message.className = "form-message";
 
     const payload = {
-      reviewer_name: document.getElementById("reviewer_name").value.trim() || null,
       pitch_id: Number(select.value),
       quality_of_opposition: Number(document.getElementById("quality_of_opposition").value),
       quality_of_pitch: Number(document.getElementById("quality_of_pitch").value),
+      facility_balls: document.getElementById("facility_balls").checked,
+      facility_referee: document.getElementById("facility_referee").checked,
+      facility_showers: document.getElementById("facility_showers").checked,
+      day_of_week: document.getElementById("day_of_week").value,
+      game_format: document.getElementById("game_format").value,
       price_per_team_per_game: Number(document.getElementById("price_per_team_per_game").value),
-      overall_experience: Number(document.getElementById("overall_experience").value),
-      day_of_week: document.getElementById("day_of_week")?.value || null,
-      review_text: document.getElementById("review_text")?.value.trim() || null
+      game_type: document.getElementById("game_type").value
     };
 
-    let insertResult = await supabaseClient.from("fct_reviews").insert([payload]);
-
-    if (insertResult.error && /review_text|day_of_week|schema cache|column/i.test(insertResult.error.message || "")) {
-      const legacyPayload = { ...payload };
-      delete legacyPayload.review_text;
-      delete legacyPayload.day_of_week;
-      insertResult = await supabaseClient.from("fct_reviews").insert([legacyPayload]);
-    }
+    const insertResult = await supabaseClient.from("fct_reviews").insert([payload]);
 
     if (insertResult.error) {
       console.error("Supabase insert error:", insertResult.error);
