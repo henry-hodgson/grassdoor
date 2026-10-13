@@ -139,4 +139,20 @@ create index if not exists idx_dim_pitches_available_days
 create index if not exists idx_fct_reviews_day_of_week
   on public.fct_reviews (day_of_week);
 
+create or replace view warehouse.fct_review
+with (security_invoker = true)
+as
+select
+  r.pitch_id as pitch_key,
+  r.created_at as reviewed_at,
+  date_trunc('day', r.created_at)::date as review_date,
+  r.quality_of_pitch::numeric as pitch_quality_score,
+  r.quality_of_opposition::numeric as opposition_quality_score,
+  r.overall_experience::numeric as overall_experience_score,
+  r.price_per_team_per_game::numeric as price_per_team,
+  nullif(trim(r.reviewer_name), '') as reviewer_name,
+  r.day_of_week
+from public.fct_reviews r
+where r.moderation_status in ('approved');
+
 commit;
