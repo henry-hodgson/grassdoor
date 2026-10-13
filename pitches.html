@@ -44,7 +44,12 @@
       </div>
       <div>
         <label for="formatFilter">Format</label>
-        <select id="formatFilter"><option value="">All formats</option></select>
+        <select id="formatFilter">
+          <option value="">All formats</option>
+          <option value="5-a-side">5-a-side</option>
+          <option value="7-a-side">7-a-side</option>
+          <option value="11-a-side">11-a-side</option>
+        </select>
       </div>
       <div>
         <label for="dayFilter">Day</label>
@@ -63,18 +68,21 @@
         <label for="facilityFilter">Facility</label>
         <select id="facilityFilter">
           <option value="">Any facilities</option>
-          <option value="walls">Walls</option>
-          <option value="overhead_net">Overhead net</option>
+          <option value="balls_provided">Balls</option>
+          <option value="referee_available">Referee</option>
           <option value="showers">Showers</option>
         </select>
       </div>
       <div>
-        <label for="accessFilter">Suitable for</label>
-        <select id="accessFilter">
-          <option value="">Anyone</option>
-          <option value="men">Men</option>
-          <option value="women">Women</option>
-          <option value="under_18">Under 18</option>
+        <label for="gameTypeFilter">Game type</label>
+        <select id="gameTypeFilter">
+          <option value="">Any type</option>
+          <option value="Men">Men</option>
+          <option value="Women">Women</option>
+          <option value="Mixed">Mixed</option>
+          <option value="Walking">Walking</option>
+          <option value="Vets">Vets</option>
+          <option value="Other">Other</option>
         </select>
       </div>
       <button id="clearFilters" class="button button-secondary filter-clear" type="button">Clear</button>
