@@ -91,8 +91,8 @@ function normalizePitch(row) {
     parking: row.parking == null ? null : row.parking === true,
     booking_url: row.venue?.booking_url || "",
     website_url: row.venue?.website_url || "",
-    balls_provided: row.balls_provided === true,
-    referee_available: row.referee_available === true,
+    balls_provided: row.balls_provided == null ? null : row.balls_provided === true,
+    referee_available: row.referee_available == null ? null : row.referee_available === true,
     supported_game_types: Array.isArray(row.supported_game_types) ? row.supported_game_types : [],
     available_days: Array.isArray(row.available_days)
       ? row.available_days
@@ -191,8 +191,6 @@ const formatDimensions = (pitch) => pitch.length && pitch.width ? `${pitch.lengt
 
 function featureLabels(pitch) {
   const labels = [];
-  if (pitch.surface_type) labels.push(pitch.surface_type);
-  if (pitch.indoor) labels.push("Indoor");
   if (pitch.balls_provided) labels.push("Balls");
   if (pitch.referee_available) labels.push("Referee");
   if (pitch.showers) labels.push("Showers");
@@ -395,13 +393,9 @@ async function initPitchDetail() {
     ? stats.reviews.map((review) => `
       <article class="review-card">
         <div class="review-card-head">
-          <div>
-            <strong>${escapeHtml(review.reviewer_name || "Anonymous player")}</strong>
-            <p class="muted">Player review</p>
-          </div>
+          <div><strong>Player review</strong></div>
           <span class="rating">★ ${Number(review.quality_of_pitch).toFixed(1)}</span>
         </div>
-        ${review.review_text ? `<p class="review-copy">${escapeHtml(review.review_text)}</p>` : ""}
         <div class="review-metrics">
           <span>Pitch <strong>${escapeHtml(review.quality_of_pitch)}/5</strong></span>
           <span>Opposition <strong>${escapeHtml(review.quality_of_opposition)}/5</strong></span>
