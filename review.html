@@ -31,7 +31,7 @@
       <p class="lead">A quick, practical review helps other players choose where to book next.</p>
       <div class="review-help card-soft">
         <h3>What makes a useful review?</h3>
-        <p>Score what you actually experienced: the pitch itself, the standard of opposition, what your team paid, and the overall night.</p>
+        <p>Score the pitch and opposition, then tell players what was included, when you played, the format, price and type of game.</p>
       </div>
     </div>
 
@@ -41,11 +41,6 @@
         <select id="pitch_id" name="pitch_id" required>
           <option value="">Loading pitches…</option>
         </select>
-      </div>
-
-      <div class="field-group">
-        <label for="reviewer_name">Your name <span class="optional">optional</span></label>
-        <input type="text" id="reviewer_name" name="reviewer_name" placeholder="e.g. Henry" maxlength="80" />
       </div>
 
       <div class="form-two-col">
@@ -73,9 +68,18 @@
         </div>
       </div>
 
+      <fieldset class="field-group checkbox-fieldset">
+        <legend>Facilities included</legend>
+        <div class="checkbox-grid">
+          <label class="check-option"><input type="checkbox" id="facility_balls" name="facility_balls" /> <span>Balls</span></label>
+          <label class="check-option"><input type="checkbox" id="facility_referee" name="facility_referee" /> <span>Referee</span></label>
+          <label class="check-option"><input type="checkbox" id="facility_showers" name="facility_showers" /> <span>Showers</span></label>
+        </div>
+      </fieldset>
+
       <div class="form-two-col">
         <div class="field-group">
-          <label for="day_of_week">Day played</label>
+          <label for="day_of_week">Day of week</label>
           <select id="day_of_week" name="day_of_week" required>
             <option value="">Choose a day</option>
             <option value="Monday">Monday</option>
@@ -88,26 +92,33 @@
           </select>
         </div>
         <div class="field-group">
-          <label for="price_per_team_per_game">Price per team</label>
-          <div class="money-input"><span>£</span><input type="number" min="0" max="500" step="0.01" id="price_per_team_per_game" name="price_per_team_per_game" placeholder="35.00" required /></div>
+          <label for="game_format">Format</label>
+          <select id="game_format" name="game_format" required>
+            <option value="">Choose format</option>
+            <option value="5-a-side">5-a-side</option>
+            <option value="7-a-side">7-a-side</option>
+            <option value="11-a-side">11-a-side</option>
+          </select>
         </div>
       </div>
 
-      <div class="field-group">
-        <label for="overall_experience">Overall experience</label>
-          <select id="overall_experience" name="overall_experience" required>
-            <option value="">Choose 1–5</option>
-            <option value="5">5 — Brilliant</option>
-            <option value="4">4 — Good</option>
-            <option value="3">3 — Fine</option>
-            <option value="2">2 — Disappointing</option>
-            <option value="1">1 — Avoid</option>
+      <div class="form-two-col">
+        <div class="field-group">
+          <label for="price_per_team_per_game">Price per team</label>
+          <div class="money-input"><span>£</span><input type="number" min="0" max="500" step="0.01" id="price_per_team_per_game" name="price_per_team_per_game" placeholder="35.00" required /></div>
+        </div>
+        <div class="field-group">
+          <label for="game_type">Game type</label>
+          <select id="game_type" name="game_type" required>
+            <option value="">Choose type</option>
+            <option value="Men">Men</option>
+            <option value="Women">Women</option>
+            <option value="Mixed">Mixed</option>
+            <option value="Walking">Walking</option>
+            <option value="Vets">Vets</option>
+            <option value="Other">Other</option>
           </select>
-      </div>
-
-      <div class="field-group">
-        <label for="review_text">Pitch notes <span class="optional">optional</span></label>
-        <textarea id="review_text" name="review_text" rows="4" maxlength="1200"></textarea>
+        </div>
       </div>
 
       <button type="submit" class="button button-block">Submit review</button>
