@@ -90,7 +90,10 @@ function normalizePitch(row) {
     changing_rooms: row.changing_rooms == null ? null : row.changing_rooms === true,
     parking: row.parking == null ? null : row.parking === true,
     booking_url: row.venue?.booking_url || "",
-    website_url: row.venue?.website_url || ""
+    website_url: row.venue?.website_url || "",
+    available_days: Array.isArray(row.available_days)
+      ? row.available_days
+      : ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
   };
 }
 
@@ -110,7 +113,7 @@ async function loadPitches() {
   try {
     const enriched = await supabaseClient
       .from("dim_pitches")
-      .select("id, created_at, name, area, nearest_station, game_format, length, width, walls, overhead_net, men, women, under_18, showers, latitude, longitude, venue_id, surface_type, indoor, changing_rooms, parking, venue:venues(booking_url, website_url)")
+      .select("id, created_at, name, area, nearest_station, game_format, length, width, walls, overhead_net, men, women, under_18, showers, latitude, longitude, venue_id, surface_type, indoor, changing_rooms, parking, available_days, venue:venues(booking_url, website_url)")
       .order("name", { ascending: true });
 
     if (!enriched.error && Array.isArray(enriched.data) && enriched.data.length) {
@@ -281,6 +284,7 @@ async function initPitches() {
   const search = document.getElementById("searchInput");
   const area = document.getElementById("areaFilter");
   const format = document.getElementById("formatFilter");
+  const day = document.getElementById("dayFilter");
   const facility = document.getElementById("facilityFilter");
   const access = document.getElementById("accessFilter");
   const count = document.getElementById("resultCount");
@@ -329,6 +333,7 @@ async function initPitches() {
       return haystack.includes(q)
         && (!area.value || pitch.area === area.value)
         && (!format.value || pitch.game_format === format.value)
+        && (!day.value || pitch.available_days.includes(day.value))
         && (!facility.value || pitch[facility.value] === true)
         && (!access.value || pitch[access.value] === true);
     });
@@ -339,7 +344,7 @@ async function initPitches() {
     renderMap(filtered);
   }
 
-  [search, area, format, facility, access].forEach((element) => {
+  [search, area, format, day, facility, access].forEach((element) => {
     element.addEventListener(element.tagName === "INPUT" ? "input" : "change", render);
   });
 
@@ -357,6 +362,7 @@ async function initPitches() {
     search.value = "";
     area.value = "";
     format.value = "";
+    day.value = "";
     facility.value = "";
     access.value = "";
     render();
@@ -404,6 +410,7 @@ async function initPitchDetail() {
           <span>Pitch <strong>${escapeHtml(review.quality_of_pitch)}/5</strong></span>
           <span>Opposition <strong>${escapeHtml(review.quality_of_opposition)}/5</strong></span>
           <span>Paid <strong>£${Number(review.price_per_team_per_game).toFixed(2)}</strong></span>
+          ${review.day_of_week ? `<span>${escapeHtml(review.day_of_week)}</span>` : ""}
           ${review.would_book_again === true ? "<span>Would book again ✓</span>" : ""}
         </div>
       </article>`).join("")
@@ -537,14 +544,16 @@ async function initReviewForm() {
       quality_of_pitch: Number(document.getElementById("quality_of_pitch").value),
       price_per_team_per_game: Number(document.getElementById("price_per_team_per_game").value),
       overall_experience: Number(document.getElementById("overall_experience").value),
+      day_of_week: document.getElementById("day_of_week")?.value || null,
       review_text: document.getElementById("review_text")?.value.trim() || null
     };
 
     let insertResult = await supabaseClient.from("fct_reviews").insert([payload]);
 
-    if (insertResult.error && /review_text|schema cache|column/i.test(insertResult.error.message || "")) {
+    if (insertResult.error && /review_text|day_of_week|schema cache|column/i.test(insertResult.error.message || "")) {
       const legacyPayload = { ...payload };
       delete legacyPayload.review_text;
+      delete legacyPayload.day_of_week;
       insertResult = await supabaseClient.from("fct_reviews").insert([legacyPayload]);
     }
 

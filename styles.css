@@ -39,3 +39,8 @@
 .review-copy{font-size:1rem;line-height:1.65;margin:.9rem 0 0;color:#27382d}
 .field-help{margin:.45rem 0 0;color:var(--muted);font-size:.82rem}
 .review-form textarea{resize:vertical;min-height:110px}
+
+/* Day-of-week directory filter */
+.schema-filters{grid-template-columns:minmax(220px,2fr) repeat(5,minmax(120px,1fr)) auto}
+@media(max-width:1000px){.schema-filters{grid-template-columns:repeat(2,minmax(0,1fr))}.schema-filters .filter-search{grid-column:1/-1}}
+@media(max-width:760px){.schema-filters{grid-template-columns:1fr}}
