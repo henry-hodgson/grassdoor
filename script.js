@@ -410,6 +410,7 @@ async function initPitchDetail() {
           <span>Pitch <strong>${escapeHtml(review.quality_of_pitch)}/5</strong></span>
           <span>Opposition <strong>${escapeHtml(review.quality_of_opposition)}/5</strong></span>
           <span>Paid <strong>£${Number(review.price_per_team_per_game).toFixed(2)}</strong></span>
+          ${review.day_of_week ? `<span>${escapeHtml(review.day_of_week)}</span>` : ""}
           ${review.would_book_again === true ? "<span>Would book again ✓</span>" : ""}
         </div>
       </article>`).join("")
