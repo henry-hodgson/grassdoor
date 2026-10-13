@@ -85,7 +85,9 @@ select
   date_trunc('day', r.created_at)::date as review_date,
   r.quality_of_pitch::numeric as pitch_quality_score,
   r.quality_of_opposition::numeric as opposition_quality_score,
+  r.overall_experience::numeric as overall_experience_score,
   r.price_per_team_per_game::numeric as price_per_team,
+  nullif(trim(r.reviewer_name), '') as reviewer_name,
   r.day_of_week,
   r.game_format,
   r.game_type,
@@ -94,5 +96,26 @@ select
   r.facility_showers
 from public.fct_reviews r
 where r.moderation_status = 'approved';
+
+create or replace view warehouse.mart_pitch_performance
+with (security_invoker = true)
+as
+select
+  p.pitch_key,
+  p.name,
+  p.area,
+  p.nearest_station,
+  p.game_format,
+  count(r.pitch_key) as review_count,
+  round(avg(r.pitch_quality_score), 2) as avg_pitch_quality,
+  round(avg(r.opposition_quality_score), 2) as avg_opposition_quality,
+  round(avg(r.overall_experience_score), 2) as avg_overall_experience,
+  round(avg(r.price_per_team), 2) as avg_price_per_team,
+  percentile_cont(0.5) within group (order by r.price_per_team) as median_price_per_team,
+  max(r.reviewed_at) as last_reviewed_at,
+  round(avg(r.pitch_quality_score), 2) as grassdoor_score
+from warehouse.dim_pitch p
+left join warehouse.fct_review r on r.pitch_key = p.pitch_key
+group by p.pitch_key, p.name, p.area, p.nearest_station, p.game_format;
 
 commit;
