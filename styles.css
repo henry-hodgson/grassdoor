@@ -44,3 +44,11 @@
 .schema-filters{grid-template-columns:minmax(220px,2fr) repeat(5,minmax(120px,1fr)) auto}
 @media(max-width:1000px){.schema-filters{grid-template-columns:repeat(2,minmax(0,1fr))}.schema-filters .filter-search{grid-column:1/-1}}
 @media(max-width:760px){.schema-filters{grid-template-columns:1fr}}
+
+/* Core review fields */
+.checkbox-fieldset{border:0;padding:0;margin:0 0 1.25rem}
+.checkbox-fieldset legend{font-weight:700;margin-bottom:.65rem}
+.checkbox-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.65rem}
+.check-option{display:flex;align-items:center;gap:.6rem;border:1px solid var(--border);border-radius:12px;padding:.8rem .9rem;background:#fff;cursor:pointer}
+.check-option input{width:auto;margin:0}
+@media(max-width:620px){.checkbox-grid{grid-template-columns:1fr}}
